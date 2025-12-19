@@ -3,7 +3,6 @@
 #include "config.h"
 #include <Arduino.h>
 #include "ArduinoJson.h"
-#include "report_service.h"
 #include "sensors.h"
 #include "feed_service.h"
 // ================= 华为云 IoT MQTT Topic =================
@@ -86,13 +85,16 @@ void message_handle(const JsonDocument &doc)
         return;
     if (strcmp(type, "post_f") == 0)
     {
-        //配合电机执行开始运动指令,暂时没实现，就是向云端发一个消息
+        //配合电机执行开始运动指令,暂时没写，就是向云端发一个消息
+        
         int feed = doc["content"]["feed"] | 0;
+        Serial.println("执行开始循环");
     }
     if (strcmp(type, "post_w") == 0)
     {
         Serial.println("投喂指定饲料量");
-        expected_weight = doc["content"]["weight"] | 0;
+        //状态机代码
+        expected_weight = doc["content"]["weight"] | 0.0f;
         feed_state = feed_feed;
     }
 }
@@ -102,10 +104,6 @@ void property_handle(const JsonDocument &doc, String response_topic)
     const char *service_id = doc["service_id"];
     if (!service_id)
         return;
-    if (strcmp(service_id, "get_tha") == 0)
-    {
-        // 这里回属性
-    }
 }
 // 命令设置处理
 void command_handle(const JsonDocument &doc, String response_topic)

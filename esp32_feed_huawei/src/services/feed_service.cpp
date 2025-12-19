@@ -12,6 +12,8 @@ unsigned long action_start_time = 0;
 
 void print_log(float weight)
 {
+    if (feed_state == feed_done)
+        return;
     static unsigned long last_log = 0;
     if (millis() - last_log < 1000) return;
 
