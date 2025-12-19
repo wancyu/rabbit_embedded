@@ -6,7 +6,6 @@
 #include "report_service.h"
 #include "sensors.h"
 #include "feed_service.h"
-
 // ================= 华为云 IoT MQTT Topic =================
 // 平台 → 设备
 #define TOPIC_MSG_DOWN "$oc/devices/" DEVICE_ID "/sys/messages/down"
@@ -82,18 +81,17 @@ void mqtt_reconnect()
 // 消息下发处理
 void message_handle(const JsonDocument &doc)
 {
-    if (!doc["content"].is<JsonObject>())
-        return;
-
     const char *type = doc["content"]["type"];
     if (!type)
         return;
     if (strcmp(type, "post_f") == 0)
     {
+        //配合电机执行开始运动指令,暂时没实现，就是向云端发一个消息
         int feed = doc["content"]["feed"] | 0;
     }
-        if (strcmp(type, "post_w") == 0)
+    if (strcmp(type, "post_w") == 0)
     {
+        Serial.println("投喂指定饲料量");
         expected_weight = doc["content"]["weight"] | 0;
         feed_state = feed_feed;
     }
@@ -112,17 +110,6 @@ void property_handle(const JsonDocument &doc, String response_topic)
 // 命令设置处理
 void command_handle(const JsonDocument &doc, String response_topic)
 {
-    // const char *command = doc["command_name"];
-    // if (!command)
-    //     return;
-    // if (strcmp(command, "state") == 0)
-    // {
-    //     const char *requestId = strrchr(topic, '=');
-    //     if (requestId)
-    //     {
-    //         response_sf(doc, requestId + 1);
-    //     }
-    // }
 }
 // 属性设置设置
 void property_set(const JsonDocument &doc, String response_topic)
@@ -131,6 +118,7 @@ void property_set(const JsonDocument &doc, String response_topic)
 // mqtt上报
 void mqtt_publish(String topic, String payload)
 {
+    Serial.println("成功上报华为云");
     mqttclient.publish(topic.c_str(), payload.c_str());
 }
 
@@ -148,19 +136,23 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 
     Serial.println(topic);      // 打印topic
     serializeJson(doc, Serial); // 打印json内容
+    Serial.println();
 
     if (strncmp(topic, TOPIC_MSG_DOWN, strlen(TOPIC_MSG_DOWN)) == 0)
     {
+        Serial.println("消息下发");
         message_handle(doc);
     }
     else if (strncmp(topic, TOPIC_PROP_GET, strlen(TOPIC_PROP_GET)) == 0)
     {
+        Serial.println("属性查询");
         String topicstr(topic);
         String response_topic = TOPIC_PROP_GET_RESP + topicstr.substring(strlen(TOPIC_PROP_GET));
         property_handle(doc, response_topic);
     }
     else if (strncmp(topic, TOPIC_PROP_SET, strlen(TOPIC_PROP_SET)) == 0)
     {
+        Serial.println("属性设置");
         String topic(topic);
         String response_topic = TOPIC_PROP_SET_RESP + topic.substring(strlen(TOPIC_PROP_SET));
         property_set(doc, response_topic);
@@ -168,6 +160,7 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
 
     else if (strncmp(topic, TOPIC_COMMAND_SET, strlen(TOPIC_COMMAND_SET)) == 0)
     {
+        Serial.println("命令设置");
         String topic(topic);
         String response_topic = TOPIC_COMMAND_SET_RESP + topic.substring(strlen(TOPIC_COMMAND_SET));
         command_handle(doc, response_topic);

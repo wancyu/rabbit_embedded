@@ -80,9 +80,6 @@ void mqtt_reconnect()
 // 消息下发处理
 void message_handle(const JsonDocument &doc)
 {
-    if (!doc["content"].is<JsonObject>())
-        return;
-
     const char *type = doc["content"]["type"];
     if (!type)
         return;
@@ -156,7 +153,6 @@ void mqtt_callback(char *topic, byte *payload, unsigned int length)
         String response_topic = TOPIC_PROP_SET_RESP + topic.substring(strlen(TOPIC_PROP_SET));
         property_set(doc, response_topic);
     }
-
     else if (strncmp(topic, TOPIC_COMMAND_SET, strlen(TOPIC_COMMAND_SET)) == 0)
     {
         Serial.println("命令设置");
