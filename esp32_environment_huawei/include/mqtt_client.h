@@ -9,5 +9,5 @@ bool mqtt_connect(void);
 void mqtt_reconnect(void);
 void mqtt_subscribe(void);
 void mqtt_callback(char *topic, byte *payload, unsigned int length);
-
+void mqtt_publish(String topic, String payload);
 #endif

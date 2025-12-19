@@ -2,8 +2,25 @@
 #define CONFIG_H 
 
 // ================= WiFi =================
-#define WIFI_SSID     "chenyu"
+#define WIFI_SSID     "chenyu1"
 #define WIFI_PASSWORD "cy383245"
+
+
+
+
+// 光敏传感器引脚定义
+#define MQ135D 25  // 光敏传感器数字输出引脚
+#define MQ135A 34  // 光敏传感器模拟输出引脚
+
+// 风扇和水泵引脚定义
+#define FAN_PIN 13   // 风扇连接的 PWM 引脚
+#define PUMP_PIN 12  // 水泵连接的 PWM 引脚
+
+// PWM 参数
+#define PWM_FREQ 1000        // PWM 频率（Hz）
+#define PWM_RESOLUTION 12    // PWM 分辨率（8 位，范围为 0-255）
+#define PWM_FREQ2 1000       // PWM 频率（Hz）
+#define PWM_RESOLUTION2 12   // PWM 分辨率（8 位，范围为 0-255）
 
 
 

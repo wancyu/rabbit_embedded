@@ -1,7 +1,7 @@
 #include "wifi_manager.h"
 #include "config.h"
 static unsigned long lastWifiAttempt = 0;
-
+//wifi连接
 bool wifi_connect()
 {
     Serial.print("[WiFi] Connecting to ");
@@ -12,7 +12,7 @@ bool wifi_connect()
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     return true;
 }
-
+//重连
 void wifi_reconnect()
 {
     if (WiFi.status() == WL_CONNECTED)

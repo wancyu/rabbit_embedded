@@ -3,6 +3,8 @@
 #include "config.h"
 #include <Arduino.h>
 #include "ArduinoJson.h"
+#include "report_service.h"
+#include "sensors.h"
 // ================= 华为云 IoT MQTT Topic =================
 // 平台 → 设备
 #define TOPIC_MSG_DOWN "$oc/devices/" DEVICE_ID "/sys/messages/down"
@@ -61,7 +63,7 @@ void mqtt_reconnect()
     if (!mqttclient.connected())
     {
         unsigned long now = millis();
-        if (now - lastMqttConn > 30000)
+        if (now - lastMqttConn > 3000)
         {
             lastMqttConn = now;
             Serial.println("[MQTT] ReConnecting...");
@@ -75,50 +77,7 @@ void mqtt_reconnect()
 
     mqttclient.loop();
 }
-//mqtt回调
-void mqtt_callback(char *topic, byte *payload, unsigned int length)
-{
-    JsonDocument doc;
-    DeserializationError err = deserializeJson(doc, payload, length);
-    if (err)
-    {
-        Serial.print("[MQTT] JSON parse failed: ");
-        Serial.println(err.f_str());
-        return;
-    }
-
-    Serial.println(topic);      // 打印topic
-    serializeJson(doc, Serial); // 打印json内容
-
-    if (strncmp(topic, TOPIC_MSG_DOWN, strlen(TOPIC_MSG_DOWN)) == 0)
-    {
-        message_handle(doc);
-    }
-    else if (strncmp(topic, TOPIC_PROP_GET, strlen(TOPIC_PROP_GET)) == 0)
-    {
-        String topic(topic);
-        String response_topic = TOPIC_PROP_GET_RESP + topic.substring(strlen(TOPIC_PROP_GET_RESP));
-        property_handle(doc, response_topic);
-    }
-    else if (strncmp(topic, TOPIC_PROP_SET, strlen(TOPIC_PROP_SET)) == 0)
-    {
-        String topic(topic);
-        String response_topic = TOPIC_PROP_SET_RESP + topic.substring(strlen(TOPIC_PROP_SET_RESP));
-        property_set(doc, response_topic);
-    }
-
-    else if (strncmp(topic, TOPIC_COMMAND_SET, strlen(TOPIC_COMMAND_SET)) == 0)
-    {
-        String topic(topic);
-        String response_topic = TOPIC_COMMAND_SET_RESP + topic.substring(strlen(TOPIC_COMMAND_SET_RESP));
-        command_handle(doc, response_topic);
-    }
-    else
-    {
-        Serial.println("TOPIC_UNKNOWN");
-    }
-}
-//消息下发处理
+// 消息下发处理
 void message_handle(const JsonDocument &doc)
 {
     if (!doc["content"].is<JsonObject>())
@@ -131,6 +90,11 @@ void message_handle(const JsonDocument &doc)
     {
         int feed = doc["content"]["feed"] | 0;
     }
+        if (strcmp(type, "post_fw") == 0)
+    {
+            ledc_fan_out(doc["content"]["fan_power"] | 0);
+            ledc_water_curtain_out(doc["content"]["water_curtain_power"] | 0);
+    }
 }
 // 属性查询处理
 void property_handle(const JsonDocument &doc, String response_topic)
@@ -141,6 +105,8 @@ void property_handle(const JsonDocument &doc, String response_topic)
     if (strcmp(service_id, "get_tha") == 0)
     {
         // 这里回属性
+        Serial.println(response_topic);
+        report_env_data(response_topic);
     }
 }
 // 命令设置处理
@@ -162,8 +128,52 @@ void command_handle(const JsonDocument &doc, String response_topic)
 void property_set(const JsonDocument &doc, String response_topic)
 {
 }
-//mqtt上报
+// mqtt上报
 void mqtt_publish(String topic, String payload)
 {
     mqttclient.publish(topic.c_str(), payload.c_str());
+}
+
+// mqtt回调
+void mqtt_callback(char *topic, byte *payload, unsigned int length)
+{
+    JsonDocument doc;
+    DeserializationError err = deserializeJson(doc, payload, length);
+    if (err)
+    {
+        Serial.print("[MQTT] JSON parse failed: ");
+        Serial.println(err.f_str());
+        return;
+    }
+
+    Serial.println(topic);      // 打印topic
+    serializeJson(doc, Serial); // 打印json内容
+
+    if (strncmp(topic, TOPIC_MSG_DOWN, strlen(TOPIC_MSG_DOWN)) == 0)
+    {
+        message_handle(doc);
+    }
+    else if (strncmp(topic, TOPIC_PROP_GET, strlen(TOPIC_PROP_GET)) == 0)
+    {
+        String topicstr(topic);
+        String response_topic = TOPIC_PROP_GET_RESP + topicstr.substring(strlen(TOPIC_PROP_GET));
+        property_handle(doc, response_topic);
+    }
+    else if (strncmp(topic, TOPIC_PROP_SET, strlen(TOPIC_PROP_SET)) == 0)
+    {
+        String topic(topic);
+        String response_topic = TOPIC_PROP_SET_RESP + topic.substring(strlen(TOPIC_PROP_SET));
+        property_set(doc, response_topic);
+    }
+
+    else if (strncmp(topic, TOPIC_COMMAND_SET, strlen(TOPIC_COMMAND_SET)) == 0)
+    {
+        String topic(topic);
+        String response_topic = TOPIC_COMMAND_SET_RESP + topic.substring(strlen(TOPIC_COMMAND_SET));
+        command_handle(doc, response_topic);
+    }
+    else
+    {
+        Serial.println("TOPIC_UNKNOWN");
+    }
 }
