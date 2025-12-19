@@ -1,4 +1,5 @@
 #include "feed_service.h"
+#include "report_service.h"
 #include "sensors.h"
 #include "config.h"
 
@@ -85,9 +86,10 @@ void handle_dump()
     if (dump_control())
     {
         feed_state = feed_done;
+        report_move();
     }
 }
-
+//默认为这个状态，这里的代码会反复执行
 void handle_done()
 {
     expected_weight = 0;

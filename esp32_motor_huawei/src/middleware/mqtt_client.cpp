@@ -5,6 +5,7 @@
 #include "ArduinoJson.h"
 #include "sensors.h"
 #include "feed_service.h"
+#include "report_service.h"
 // ================= 华为云 IoT MQTT Topic =================
 // 平台 → 设备
 #define TOPIC_MSG_DOWN "$oc/devices/" DEVICE_ID "/sys/messages/down"
@@ -83,20 +84,6 @@ void message_handle(const JsonDocument &doc)
     const char *type = doc["content"]["type"];
     if (!type)
         return;
-    if (strcmp(type, "post_f") == 0)
-    {
-        //配合电机执行开始运动指令,暂时没写，就是向云端发一个消息
-        
-        int feed = doc["content"]["feed"] | 0;
-        Serial.println("执行开始循环");
-    }
-    if (strcmp(type, "post_w") == 0)
-    {
-        Serial.println("投喂指定饲料量");
-        //状态机代码
-        expected_weight = doc["content"]["weight"] | 0.0f;
-        feed_state = feed_feed;
-    }
 }
 // 属性查询处理
 void property_handle(const JsonDocument &doc, String response_topic)
@@ -108,6 +95,14 @@ void property_handle(const JsonDocument &doc, String response_topic)
 // 命令设置处理
 void command_handle(const JsonDocument &doc, String response_topic)
 {
+    const char *type = doc["command_name"]["type"];
+    if (!type)
+        return;
+    if (strcmp(type, "state") == 0)
+    {
+        motor_moving();
+        report_cam_data(response_topic);
+    }
 }
 // 属性设置设置
 void property_set(const JsonDocument &doc, String response_topic)
@@ -120,6 +115,7 @@ void mqtt_publish(String topic, String payload)
     Serial.println("成功上报华为云");
     mqttclient.publish(topic.c_str(), payload.c_str());
 }
+
 // mqtt回调
 void mqtt_callback(char *topic, byte *payload, unsigned int length)
 {

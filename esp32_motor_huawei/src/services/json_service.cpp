@@ -12,12 +12,11 @@ String build_env_json(float temp, float hum, float nh3)
     serializeJson(doc, payload);
     return payload;
 }
-
-String build_move_json()
+String build_stop_json()
 {
     JsonDocument doc;
-    doc["services"][0]["service_id"] = "feed";
-    doc["services"][0]["properties"]["state"] = 1;
+    doc["services"][0]["service_id"] = "stop";
+    doc["services"][0]["properties"]["camstate"] = 1;
     String payload;
     serializeJson(doc, payload);
     return payload;
