@@ -12,7 +12,7 @@ bool wifi_connect()
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     return true;
 }
-//wifi重连
+//重连
 void wifi_reconnect()
 {
     if (WiFi.status() == WL_CONNECTED)

@@ -2,6 +2,7 @@
 #include "sensors.h"
 #include "mqtt_client.h"
 
+//温湿度氨气浓度上报
 void report_env_data(String response_topic){
     float temp = get_temperature();
     float hum = get_humidity();

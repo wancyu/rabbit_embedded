@@ -13,7 +13,7 @@ void environment_init()
   aht.begin();
 }
 
-
+//设置风机功率
 void ledc_fan_out(int fan_power)
 {
     fan_power = constrain(fan_power, 0, 100);
@@ -21,13 +21,13 @@ void ledc_fan_out(int fan_power)
     ledcWrite(FAN_PIN, power);
 }
 
+//设置水帘功率
 void ledc_water_curtain_out(int water_curtain_power)
 {
     water_curtain_power = constrain(water_curtain_power, 0, 100);
     int power = round(water_curtain_power * 4095.0 / 100.0); // 12 bit
     ledcWrite(PUMP_PIN, power);
 }
-
 
 //获取温度
 float get_temperature()
