@@ -18,6 +18,7 @@
 #define TOPIC_PROP_REPORT "$oc/devices/" DEVICE_ID "/sys/properties/report"
 #define TOPIC_EVENT_REPORT "$oc/devices/" DEVICE_ID "/sys/events/up"
 // ================= MQTT 对象 =================
+WiFiClient wificlient;
 PubSubClient mqttclient(wificlient);
 
 // 上次 MQTT 重连时间

@@ -1,22 +1,16 @@
 #ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
-
-#include <Arduino.h>
 #include <WiFi.h>
+#include <Arduino.h>
+#include "config.h"
 
-extern WiFiClient wificlient;
+// ================== WiFi 管理接口 ==================
 
-/**
- * @brief 连接 WiFi（带超时）
- * @return true   连接成功
- * @return false  连接失败
- */
+// 尝试连接 WiFi（异步，不阻塞）
 bool wifi_connect();
 
-/**
- * @brief WiFi掉线自动重连（建议在 loop 周期调用）
- */
+// WiFi 重连逻辑（定时调用，非阻塞）
 void wifi_reconnect();
 
-#endif
+#endif // WIFI_MANAGER_H

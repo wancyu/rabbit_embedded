@@ -1,12 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H 
 
-
-// ================= 设备身份 =================
-
-
-
-
 // ================= WiFi =================
 #define WIFI_SSID     "chenyu"
 #define WIFI_PASSWORD "cy383245"
